@@ -29,6 +29,7 @@ rstan_options(auto_write = T)
 options(mc.cores = parallel::detectCores())
 ```
 
+
 ## 分散分析モデル
 
 ```{r}
@@ -43,16 +44,19 @@ anova_brms <- brm(
 )
 ```
 
-Result:
+>Result:
+
 ```{r}
 anova_brms
 ```
 
-Plotting:
+>Plotting:
+
 ```{r}
 eff <- marginal_effects(anova_brms)
 plot(eff, points = FALSE)
 ```
+
 
 ## 正規線形モデル
 
@@ -68,16 +72,19 @@ lm_brms <- brm(
 )
 ```
 
-Result:
+>Result:
+
 ```{r}
 lm_brms
 ```
 
-Plotting:
+>Plotting:
+
 ```{r}
 eff <- marginal_effects(lm_brms, effects = "temperature:weather")
 plot(eff, points = TRUE)
 ```
+
 
 ## ポアソン回帰モデル
 
@@ -92,22 +99,62 @@ glm_pois_brms <- brm(
 )
 ```
 
-Result:
+>Result:
+
 ```{r}
 glm_pois_brms
 ```
 
-Plotting:
+>Plotting:
+
 ```{r}
 eff <- marginal_effects(glm_pois_brms, 
                         effects = "temperature:weather")
 plot(eff, points = TRUE)
 ```
 
-Posterior distribution:
+>Posterior distribution:
+
 ```{r}
 plot(glm_pois_brms)
 ```
+
+
+ポアソン回帰モデルが過分散となる場合には、ランダム効果をを入れた一般化線形混合モデルとして扱う。
+
+```{r}
+fish_num_climate_2 <- read.csv("4-1-1-fish-num-2.csv")
+fish_num_climate_2$id <- as.factor(fish_num_climate_2$id)
+glmm_pois_brms <- brm(
+  formula = fish_num ~ weather + temperature + (1|id), # ランダム効果
+  family = poisson(),                            # ポアソン分布を使う
+  data = fish_num_climate_2,                     # データ
+  seed = 1,                                      # 乱数の種
+  prior = c(set_prior("", class = "Intercept"),
+            set_prior("", class = "sd"))         # 無情報事前分布にする
+)
+```
+
+>Result:
+
+```{r}
+glmm_pois_brms
+```
+
+>Plotting:
+
+```{r}
+eff <- marginal_effects(glmm_pois_brms, 
+                        effects = "temperature:weather")
+plot(eff, points = TRUE)
+```
+
+>Posterior distribution:
+
+```{r}
+plot(glmm_pois_brms)
+```
+
 
 ## ロジスティック回帰モデル
 
@@ -122,12 +169,14 @@ glm_binom_brms <- brm(
 )
 ```
 
-Result:
+>Result:
+
 ```{r}
 glm_binom_brms
 ```
 
-Plotting:
+>Plotting:
+
 ```{r}
 eff <- marginal_effects(glm_binom_brms, 
                         effects = "nutrition:solar",
@@ -135,9 +184,11 @@ eff <- marginal_effects(glm_binom_brms,
 plot(eff, points = TRUE)
 ```
 
-Posterior distribution:
+>Posterior distribution:
+
 ```{r}
 plot(glm_binom_brms)
 ```
+
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
